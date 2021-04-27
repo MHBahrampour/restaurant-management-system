@@ -1,8 +1,8 @@
 import psycopg2
-from config import config
+import library as lib
 
+# Get data for tables
 def get_data():
-    """ Get data for a table """
 
     # List of tables and columns
     tables_columns = {
@@ -16,17 +16,15 @@ def get_data():
         "order_foods":  ("order_id", "food_id")        
     }
 
-    print("""
-    :: Select number of the table: 
-       1. branch    2. person    3. employee    4. customer
-       5. salon     6. orders    7. food        8. order_foods
-    """)
+    print(":: Select number of the table:")
+    print("   1. branch    2. person    3. employee    4. customer")
+    print("   5. salon     6. orders    7. food        8. order_foods\n")
 
     table_number = int(input(">> Enter the table number: "))
     table_name = list(tables_columns.keys())[table_number-1]
 
     row = []
-    print(":: Insert data for each column: ")
+    print(":: Inserting data for '{}':".format(table_name))
 
     for column in tables_columns[table_name]:
         tmp = input(">> Column '{}': ".format(column))
@@ -41,8 +39,8 @@ def get_data():
 
     return table_name, tuple(row)
 
+# Insert a row into tables
 def insert_row(table_name, row):
-    """ Insert a row into a table """
 
     sql = {
         "branch":       "INSERT INTO branch VALUES(%s, %s, %s, %s, %s, %s)",
@@ -58,7 +56,7 @@ def insert_row(table_name, row):
     conn = None
     try:
         # read database configuration
-        params = config()
+        params = lib.config()
         # connect to the PostgreSQL database
         conn = psycopg2.connect(**params)
         # create a new cursor
@@ -75,20 +73,40 @@ def insert_row(table_name, row):
         if conn is not None:
             conn.close()
 
+# This function, initialize a complete sample database
+def sample_database():
+    check = lib.connect()
+    if check == True:
+        lib.create_tables()
+        lib.initialize_data()
+
 def main():
+
     print("""
     :: Use belows numbers to do something: 
+       0 - Initialize a complete sample database.
        1 - Insert data into a table.
-       0 - Close the app.""")
+       9 - Close the app.""")
+
+    # Initialization of sample database
+    init = False
 
     while True:
 
         user_input = input("\n>> ")
 
-        if user_input == '1':
+        if user_input == '0':
+            if init == False:
+                sample_database()
+                init = True
+            else:
+                print(":: Sample database is already created.")
+
+        elif user_input == '1':
             table_name, row = get_data()
             insert_row(table_name, row)
-        elif user_input == '0':
+
+        elif user_input == '9':
             print("!! API closed.")
             exit()
 
