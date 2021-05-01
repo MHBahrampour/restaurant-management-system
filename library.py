@@ -71,15 +71,17 @@ def create_tables():
             date            DATE NOT NULL
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS person (
             id              INTEGER NOT NULL PRIMARY KEY,
-            firt_name       TEXT NOT NULL,
+            first_name      TEXT NOT NULL,
             last_name       TEXT NOT NULL,
             gender          TEXT NOT NULL,
             phone_number    TEXT NOT NULL
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS employee (
             id              INTEGER PRIMARY KEY,
@@ -102,6 +104,7 @@ def create_tables():
                     ON DELETE CASCADE
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS customer (
             id              INTEGER PRIMARY KEY,
@@ -112,6 +115,7 @@ def create_tables():
                     ON UPDATE CASCADE ON DELETE CASCADE
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS salon (
             id              INTEGER NOT NULL PRIMARY KEY,
@@ -120,6 +124,7 @@ def create_tables():
             floor           INTEGER NOT NULL
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS orders (
             id              SERIAL PRIMARY KEY,
@@ -140,29 +145,39 @@ def create_tables():
                 FOREIGN KEY (waiter_id)
                     REFERENCES employee (id)
                     ON DELETE CASCADE,
+
                 FOREIGN KEY (accountant_id)
                     REFERENCES employee (id)
                     ON DELETE CASCADE,
+
             CONSTRAINT fk_salon
                 FOREIGN KEY (salon_id)
                     REFERENCES salon (id)
                     ON DELETE CASCADE
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS food (
             id              INTEGER NOT NULL PRIMARY KEY,
+            branch_id       INTEGER NOT NULL,
             chef_id         INTEGER NOT NULL,
             name            TEXT NOT NULL,
             type            TEXT NOT NULL,
             cost            REAL NOT NULL,
 
+            CONSTRAINT fk_branch
+                FOREIGN KEY (branch_id)
+                    REFERENCES branch (id)
+                    ON DELETE CASCADE,
+            
             CONSTRAINT fk_employee
                 FOREIGN KEY (chef_id)
                     REFERENCES employee (id)
                     ON DELETE CASCADE
         )
         """,
+
         """
         CREATE TABLE IF NOT EXISTS order_foods (
             id              SERIAL PRIMARY KEY,
@@ -221,33 +236,67 @@ def insert_data(table_name, data_list):
         "customer":     "INSERT INTO customer VALUES(%s)",
         "salon":        "INSERT INTO salon VALUES(%s, %s, %s, %s)",
         "orders":       "INSERT INTO orders VALUES(DEFAULT, %s, %s, %s, %s, %s, %s, %s)",
-        "food":         "INSERT INTO food VALUES(%s, %s, %s, %s, %s)",
+        "food":         "INSERT INTO food VALUES(%s, %s, %s, %s, %s, %s)",
         "order_foods":  "INSERT INTO order_foods VALUES(DEFAULT, %s, %s)"
     }
 
     conn = None
     try:
-        # read database configuration
+        # Read database configuration
         params = config()
 
-        # connect to the PostgreSQL database
+        # Connect to the PostgreSQL database
         conn = psycopg2.connect(**params)
 
-        # create a new cursor
+        # Create a new cursor
         cur = conn.cursor()
 
-        # execute the INSERT statement
+        # Execute the INSERT statement
         cur.executemany(sql[table_name], data_list)
 
-        # commit the changes to the database
+        # Commit the changes to the database
         conn.commit()
 
-        # close communication with the database
+        # Close communication with the database
         cur.close()
 
+    # If any exception occurred, display the error message
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
+    # Close the connection to the database
+    finally:
+        if conn is not None:
+            conn.close()
+
+# Execute a query and return the result
+def execute_query(query):
+
+    conn = None
+    rows = []
+    try:
+        # Read database configuration
+        params = config()
+        # Connect to the PostgreSQL database
+        conn = psycopg2.connect(**params)
+        # Create a new cursor
+        cur = conn.cursor()
+
+        # Execute the query
+        cur.execute(query)
+        # Fetches all rows 
+        rows = cur.fetchall()
+
+        # Close communication with the database
+        cur.close()
+
+        return rows
+
+    # If any exception occurred, display the error message
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+
+    # Close the connection to the database
     finally:
         if conn is not None:
             conn.close()
@@ -354,7 +403,7 @@ def initialize_data():
         (303,    100,    "Class C",    3)
     ]
     insert_data("salon", data_list)
-    print("   I[Done] nserting to 'salon'")
+    print("   [Done] Inserting to 'salon'")
 
     # Table 'orders'
     data_list = [
@@ -373,20 +422,20 @@ def initialize_data():
 
     # Table 'food'
     data_list = [
-        (961,    13835,    "Chelo Morgh",    "Food",        25000),
-        (962,    13835,    "Chelo Kabab",    "Food",        35000),
-        (963,    13877,    "Pizza",          "FastFood",    20000),
-        (964,    13877,    "Hot Dog",        "FastFood",    15000),
+        (961,      96101,    13835,    "Chelo Morgh",    "Food",        25000),
+        (962,      96101,    13835,    "Chelo Kabab",    "Food",        35000),
+        (963,      96101,    13877,    "Pizza",          "FastFood",    20000),
+        (964,      96101,    13877,    "Hot Dog",        "FastFood",    15000),
 
-        (951,    23877,    "Chelo Morgh",    "Food",        25000),
-        (952,    23877,    "Chelo Kabab",    "Food",        35000),
-        (953,    24114,    "Pizza",          "FastFood",    20000),
-        (954,    24114,    "Hot Dog",        "FastFood",    15000),
+        (951,      95053,    23877,    "Chelo Morgh",    "Food",        25000),
+        (952,      95053,    23877,    "Chelo Kabab",    "Food",        35000),
+        (953,      95053,    24114,    "Pizza",          "FastFood",    20000),
+        (954,      95053,    24114,    "Hot Dog",        "FastFood",    15000),
 
-        (941,    35134,    "Chelo Morgh",    "Food",        25000),
-        (942,    35134,    "Chelo Kabab",    "Food",        35000),
-        (943,    35178,    "Pizza",          "FastFood",    20000),
-        (944,    35178,    "Hot Dog",        "FastFood",    15000),
+        (941,      94017,    35134,    "Chelo Morgh",    "Food",        25000),
+        (942,      94017,    35134,    "Chelo Kabab",    "Food",        35000),
+        (943,      94017,    35178,    "Pizza",          "FastFood",    20000),
+        (944,      94017,    35178,    "Hot Dog",        "FastFood",    15000),
     ]
     insert_data("food", data_list)
     print("   [Done] Inserting to 'food'")
@@ -407,7 +456,7 @@ def initialize_data():
         (5,    951),
         (6,    942),
         (6,    941),
-        (7,    944)
+        (7,    944),
     ]
     insert_data("order_foods", data_list)
     print("   [Done] Inserting to 'order_foods'")

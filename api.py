@@ -12,7 +12,7 @@ def get_data():
         "customer":     ("id",),
         "salon":        ("id", "capacity", "type", "floor"),
         "orders":       ("customer_id", "waiter_id", "accountant_id", "salon_id", "order_date", "reg_time", "total_cost"),
-        "food":         ("id", "chef_id", "name", "type", "cost"),
+        "food":         ("id", "branch_id", "chef_id", "name", "type", "cost"),
         "order_foods":  ("order_id", "food_id")        
     }
 
@@ -49,7 +49,7 @@ def insert_row(table_name, row):
         "customer":     "INSERT INTO customer VALUES(%s)",
         "salon":        "INSERT INTO salon VALUES(%s, %s, %s, %s)",
         "orders":       "INSERT INTO orders VALUES(DEFAULT, %s, %s, %s, %s, %s, %s, %s)",
-        "food":         "INSERT INTO food VALUES(%s, %s, %s, %s, %s)",
+        "food":         "INSERT INTO food VALUES(%s, %s, %s, %s, %s, %s)",
         "order_foods":  "INSERT INTO order_foods VALUES(DEFAULT, %s, %s)"
     }
 
@@ -80,12 +80,60 @@ def sample_database():
         lib.create_tables()
         lib.initialize_data()
 
+def sample_queries():
+
+    queries = [
+        """
+            SELECT	
+                id, first_name || ' ' || last_name AS full_name, gender
+            FROM
+                person
+            WHERE
+                id IN (
+                    SELECT id FROM employee
+                )
+            ORDER BY	
+                gender asc
+        """,
+
+        """
+            SELECT	
+                food.name, branch.name, cost
+            FROM
+                food
+            INNER JOIN
+                branch
+                ON branch_id = branch.id
+            WHERE
+                cost between 10000 and 20000
+            ORDER BY	
+                food.name asc;
+        """,
+        "",
+        "",
+        ""
+    ]
+    print(":: List of all Sample Queries:")
+    print("   1. ID, Full Name and Gender of all employees.")
+    print("   2. Food Name, Branch Name and price of foods that are priced between 10000 and 20000.")
+    print("   3. ")
+    print("   4. ")
+    print("   5. ")
+
+    query_number = int(input(">> Enter the query number to display the result: "))
+
+    rows = lib.execute_query(queries[query_number-1])
+
+    for row in rows:
+        print("   {}".format(row))
+
 def main():
 
     print("""
     :: Use belows numbers to do something: 
        0 - Initialize a complete sample database.
        1 - Insert data into a table.
+       2 - Sample Queries.
        9 - Close the app.""")
 
     # Initialization of sample database
@@ -105,6 +153,9 @@ def main():
         elif user_input == '1':
             table_name, row = get_data()
             insert_row(table_name, row)
+
+        elif user_input == '2':
+            sample_queries()
 
         elif user_input == '9':
             print("!! API closed.")
