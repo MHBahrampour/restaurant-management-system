@@ -48,7 +48,7 @@ def insert_row(table_name, row):
         "employee":     "INSERT INTO employee VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
         "customer":     "INSERT INTO customer VALUES(%s)",
         "salon":        "INSERT INTO salon VALUES(%s, %s, %s, %s)",
-        "orders":       "INSERT INTO orders VALUES(DEFAULT, %s, %s, %s, %s, %s, %s, %s)",
+        "orders":       "INSERT INTO orders VALUES(DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s)",
         "food":         "INSERT INTO food VALUES(%s, %s, %s, %s, %s, %s)",
         "order_foods":  "INSERT INTO order_foods VALUES(DEFAULT, %s, %s)"
     }
@@ -107,18 +107,85 @@ def sample_queries():
             WHERE
                 cost between 10000 and 20000
             ORDER BY	
-                food.name asc;
+                food.name asc
         """,
-        "",
-        "",
-        ""
+
+        """
+            SELECT	
+                branch.name AS branch_name,
+                first_name || ' ' || last_name AS full_name,
+                phone_number,
+                SUM(total_cost) AS total_purchase,
+                COUNT(orders.id) AS purchase_count                
+            FROM 
+                ((orders
+            INNER JOIN
+                person
+                ON orders.customer_id = person.id)
+            INNER JOIN
+                branch
+                ON branch_id = branch.id)
+            WHERE
+                branch.name = 'BestFood_1'
+            GROUP BY
+                branch.name, full_name, phone_number
+            ORDER BY	
+                total_purchase desc
+            FETCH FIRST 1 ROW ONLY
+        """,
+
+        """
+            SELECT
+                name AS branch_name,
+                COUNT(orders.id),
+                SUM(total_cost) AS purchase
+            FROM
+                orders
+            LEFT OUTER JOIN
+                branch
+                ON branch_id = branch.id
+            WHERE
+                order_date >= '1400-01-01'
+            GROUP BY
+                branch_name
+            HAVING
+                SUM(total_cost) >= 0
+            ORDER BY
+                branch_name
+        """,
+
+        """
+            SELECT
+                first_name || ' ' || last_name AS full_name,
+                branch.name,
+                COUNT(food_id) AS count
+            FROM
+                ((((food
+            INNER JOIN
+                order_foods
+                ON food.id = food_id)
+            INNER JOIN
+                person
+                ON person.id = chef_id)
+            INNER JOIN
+                employee
+                ON chef_id = employee.id)
+            INNER JOIN
+                branch
+                ON employee.branch_id = branch.id)
+            GROUP BY
+                full_name, branch.name
+            ORDER BY
+                count DESC
+        """
     ]
+
     print(":: List of all Sample Queries:")
     print("   1. ID, Full Name and Gender of all employees.")
     print("   2. Food Name, Branch Name and price of foods that are priced between 10000 and 20000.")
-    print("   3. ")
-    print("   4. ")
-    print("   5. ")
+    print("   3. Branch Name, Full Name, and Total Purchase of #1 buyer of branch 'BestFood_1'.")
+    print("   4. Branch Name, Order Count and Income of all branches in 1400.")
+    print("   5. Full Name, Branch Name and count of cooking of the chefs who cooked the most food.")
 
     query_number = int(input(">> Enter the query number to display the result: "))
 

@@ -128,6 +128,7 @@ def create_tables():
         """
         CREATE TABLE IF NOT EXISTS orders (
             id              SERIAL PRIMARY KEY,
+            branch_id       INTEGER NOT NULL,
             customer_id     INTEGER NOT NULL,
             waiter_id       INTEGER NOT NULL,
             accountant_id   INTEGER NOT NULL,
@@ -135,6 +136,11 @@ def create_tables():
             order_date      DATE NOT NULL,
             reg_time        TIME NOT NULL,
             total_cost      REAL NOT NULL,
+            
+            CONSTRAINT fk_branch
+                FOREIGN KEY (branch_id)
+                    REFERENCES branch (id)
+                    ON DELETE CASCADE,
 
             CONSTRAINT fk_customer
                 FOREIGN KEY (customer_id)
@@ -235,7 +241,7 @@ def insert_data(table_name, data_list):
         "employee":     "INSERT INTO employee VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
         "customer":     "INSERT INTO customer VALUES(%s)",
         "salon":        "INSERT INTO salon VALUES(%s, %s, %s, %s)",
-        "orders":       "INSERT INTO orders VALUES(DEFAULT, %s, %s, %s, %s, %s, %s, %s)",
+        "orders":       "INSERT INTO orders VALUES(DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s)",
         "food":         "INSERT INTO food VALUES(%s, %s, %s, %s, %s, %s)",
         "order_foods":  "INSERT INTO order_foods VALUES(DEFAULT, %s, %s)"
     }
@@ -302,9 +308,10 @@ def execute_query(query):
             conn.close()
 
 # Initialize data for tables         
-def initialize_data():
+def initialize_data():  
     
     print(":: Inserting sample data ...")
+
     # Table 'branch'
     data_list = [
         (96101,     "BestFood_1",   "Tehran",       "Varamin",      "Zeytoun",      "1390-11-05"),
@@ -339,11 +346,8 @@ def initialize_data():
 
         (77211,     "Shabnam",      "Ahmadi",       "female",       9148271589),
         (77278,     "Ali",          "Alizadeh",     "male",         9009128115),
-        (77587,     "Mona",         "Karami",       "female",       9184175185),
         (88578,     "Golnaz",       "Mirzaee",      "female",       9127587145),
-        (88175,     "Reza",         "Farhadi",      "male",         9018574514),
         (88154,     "Mohsen",       "Fattahi",      "male",         9857185975),
-        (99870,     "Rozhin",       "Mohammadian",  "female",       9825719501),
         (99128,     "Afshin",       "Niknam",       "male",         9158719511),
         (99137,     "Negar",        "Alizadeh",     "female",       9185894115)
     ]
@@ -378,12 +382,12 @@ def initialize_data():
 
     # Table 'customer'
     data_list = [
-        (24127,),
-        (25835,),
-        (25877,),
-        (35134,),
-        (35178,),
-        (35198,),
+        (77211,),
+        (77278,),
+        (88154,),
+        (88578,),
+        (99137,),
+        (99128,),
     ]
     insert_data("customer", data_list)
     print("   [Done] Inserting to 'customer'")
@@ -407,15 +411,16 @@ def initialize_data():
 
     # Table 'orders'
     data_list = [
-        (24127,    13119,    23814,    101,    "1399-11-07",    "06:05 PM",    75000),
-        (25835,    13127,    23814,    102,    "1400-01-03",    "11:30 AM",    55000),
-        (24127,    13127,    23814,    103,    "1400-01-03",    "04:50 PM",    40000),
+        (96101,    77211,    13119,    23814,    101,    "1399-11-07",    "06:05 PM",    75000),
+        (96101,    77278,    13127,    23814,    102,    "1400-01-03",    "11:30 AM",    55000),
+        (96101,    77211,    13127,    23814,    103,    "1400-01-03",    "04:50 PM",    40000),
 
-        (25877,    23827,    24119,    102,    "1399-10-03",    "12:45 PM",    80000),
-        (35134,    23835,    24119,    101,    "1399-12-29",    "01:00 PM",    40000),
+        (95053,    88154,    23827,    24119,    202,    "1399-10-03",    "12:45 PM",    80000),
+        (95053,    88578,    23835,    24119,    201,    "1399-12-29",    "01:00 PM",    40000),
 
-        (35178,    25835,    35198,    101,    "1399-11-01",    "08:00 PM",    60000),
-        (35198,    25877,    35198,    103,    "1400-01-02",    "09:10 PM",    15000),
+        (94017,    99137,    25835,    35198,    301,    "1399-11-01",    "08:00 PM",    60000),
+        (94017,    99128,    25877,    35198,    303,    "1400-01-02",    "09:10 PM",    15000),
+        (94017,    99128,    25835,    35198,    302,    "1400-02-02",    "07:30 PM",    60000),
     ]
     insert_data("orders", data_list)
     print("   [Done] Inserting to 'orders'")
@@ -457,6 +462,8 @@ def initialize_data():
         (6,    942),
         (6,    941),
         (7,    944),
+        (8,    941),
+        (8,    942),
     ]
     insert_data("order_foods", data_list)
     print("   [Done] Inserting to 'order_foods'")
